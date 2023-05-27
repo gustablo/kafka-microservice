@@ -1,0 +1,51 @@
+version: "3.3"
+
+services:
+  customer-api:
+    build: ./customer-api
+    command: npm run dev
+    ports:
+      - 3001:3001
+    volumes:
+      - ./customer-api/src:/microservices/customer-api/src
+    depends_on:
+      - kafka
+
+  schedule-api:
+    build: ./schedule-api
+    command: npm run dev
+    ports:
+      - 3000:3000
+    volumes:
+      - ./schedule-api/src:/microservices/schedule-api/src
+    depends_on:
+      - kafka
+
+  zookeeper:
+    image: ubuntu/zookeeper
+    container_name: zookeper_container
+    ports:
+      - 2181:2181
+
+  kafka:
+    image: ubuntu/kafka
+    container_name: kafka_container
+    ports:
+      - 9092:9092
+    links:
+      - zookeeper
+    depends_on:
+      - zookeeper
+    environment:
+      ADV_HOST: kafka  
+      ZOOKEEPER_HOST: zookeper_container
+
+  db:
+    image: 'mongo'
+    ports:
+      - '27017:27017'
+    volumes:
+      - db:/data/db
+
+volumes:
+  db: {}
